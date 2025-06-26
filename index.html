@@ -1,3 +1,5 @@
+สา่เดดเ้่
+
 
 <!DOCTYPE html>
 <html lang="th">
@@ -6,12 +8,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบจองห้องประชุม</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     label, input, button { display: block; width: 100%; margin-top: 10px; }
     #qr-container img { width: 200px; margin-top: 10px; }
     table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-    table, th, td { border: 1px solid #ccc; }
-    th, td { padding: 8px; text-align: left; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
   </style>
 </head>
 <body>
@@ -42,48 +44,58 @@
   </table>
 
   <script>
-    const bookingForm = document.getElementById('booking-form');
-    const bookingTable = document.getElementById('booking-table').querySelector('tbody');
+    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzjUnOG1GUDnBZSMcFqupglXbhxZOU8R7_AJSJMRT8evzOk95AVj7dLQ3spPwD0wLtq2Q/exec';
+    const ROOM = "ห้อง A";
+    const AMOUNT = 300;
+    const PHONE = "0812345678"; // ใส่เบอร์พร้อมเพย์จริงของคุณ
 
-    bookingForm.addEventListener('submit', async function(e) {
+    document.getElementById('booking-form').addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
       const date = document.getElementById('date').value;
       const time = document.getElementById('time').value;
-      const amount = 300;
-      const phone = "0812345678"; // เบอร์พร้อมเพย์ของคุณ
-      const room = "ห้อง A";
-      const status = "รอชำระเงิน";
 
-      // ส่งข้อมูลไป Google Sheet
-      await fetch("https://script.google.com/macros/s/YOUR_SCRIPT_URL/exec", {
+      // ส่งข้อมูลไปยัง Google Sheet
+      await fetch(SHEET_URL, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, date, time, amount, room, status })
+        body: JSON.stringify({ name, email, date, time, room: ROOM, status: "รอชำระเงิน" })
       });
 
       // แสดง QR พร้อมเพย์
-      const qr = `https://promptpay.io/${phone}/${amount}`;
+      const qr = `https://promptpay.io/${PHONE}/${AMOUNT}`;
       document.getElementById('qr-container').innerHTML = `
-        <p>กรุณาชำระเงินจำนวน ${amount} บาท ผ่านพร้อมเพย์</p>
+        <p>กรุณาชำระเงินจำนวน ${AMOUNT} บาท ผ่านพร้อมเพย์</p>
         <img src="${qr}.png" alt="PromptPay QR" />
       `;
 
-      // แสดงในตารางการจอง
-      const row = bookingTable.insertRow();
-      row.innerHTML = `
-        <td>${name}</td>
-        <td>${email}</td>
-        <td>${date}</td>
-        <td>${time}</td>
-        <td>${room}</td>
-        <td>${status}</td>
-      `;
-
-      bookingForm.reset();
+      // โหลดรายการใหม่
+      loadBookings();
     });
+
+    async function loadBookings() {
+      const res = await fetch(SHEET_URL);
+      const data = await res.json();
+      const tableBody = document.querySelector("#booking-table tbody");
+      tableBody.innerHTML = '';
+
+      data.bookings.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.name}</td>
+          <td>${row.email}</td>
+          <td>${row.date}</td>
+          <td>${row.time}</td>
+          <td>${row.room}</td>
+          <td>${row.status}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    loadBookings();
   </script>
 </body>
 </html>
