@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>จองห้องประชุม</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f0f0f0; }
+    form { background: white; padding: 2rem; border-radius: 12px; max-width: 600px; margin: auto; }
+    label { display: block; margin-top: 1rem; }
+    input, select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; }
+    button { margin-top: 1.5rem; padding: 0.75rem 1.5rem; background: green; color: white; border: none; border-radius: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>ฟอร์มจองห้องประชุม</h1>
+  <form id="bookingForm">
+    <label>ชื่อผู้จอง <input type="text" name="name" required /></label>
+    <label>หน่วยงาน <input type="text" name="department" required /></label>
+    <label>เบอร์โทรศัพท์ <input type="text" name="phone" required /></label>
+    <label>จำนวนผู้เข้าร่วม <input type="number" name="people" required /></label>
+    <label>ห้องประชุม
+      <select name="room" required>
+        <option value="A">ห้อง A</option>
+        <option value="B">ห้อง B</option>
+        <option value="C">ห้อง C</option>
+      </select>
+    </label>
+    <label>วันที่ <input type="date" name="date" required /></label>
+    <label>เวลา <input type="time" name="time" required /></label>
+    <label>อุปกรณ์ที่ใช้
+      <select name="equipment" multiple>
+        <option value="projector">โปรเจคเตอร์</option>
+        <option value="speaker">ลำโพง</option>
+      </select>
+    </label>
+    <label>อัปโหลดสลิปโอนเงิน <input type="file" name="slip" accept="image/*,application/pdf" required /></label>
+    <button type="submit">อัปโหลดสลิปและจอง</button>
+  </form>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzjUnOG1GUDnBZSMcFqupglXbhxZOU8R7_AJSJMRT8evzOk95AVj7dLQ3spPwD0wLtq2Q/exec';
+ // วาง URL จาก Apps Script ที่ Deploy
+    const form = document.getElementById('bookingForm');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      fetch(scriptURL, { method: 'POST', body: formData })
+        .then(res => res.text())
+        .then(text => {
+          if (text === 'success') {
+            alert('จองสำเร็จแล้ว!');
+            window.location.href = 'success.html';
+          } else if (text === 'จองซ้ำ') {
+            alert('ห้องนี้ถูกจองแล้ว กรุณาเลือกวันหรือห้องอื่น');
+          } else {
+            alert('เกิดข้อผิดพลาด: ' + text);
+          }
+        })
+        .catch(err => alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'));
+    });
+  </script>
+</body>
+</html>
